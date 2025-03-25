@@ -108,7 +108,7 @@ class TripController extends Controller
         $driverDocument = $request->input('cedula');
 
         if (empty($driverEmail) && empty($driverDocument)) {
-            return response()->json(['error' => 'Debes enviar al menos un parámetro (email o cédula)'], 400);
+            return response()->json(['error' => 'Debes enviar al menos un parámetro.'], 400);
         }
 
         if ($request->filled('cedula')) {
