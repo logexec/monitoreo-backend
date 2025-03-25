@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\TripController;
 
 use App\Http\Controllers\Api\AuthController;
-use App\Http\Middleware\AuthenticateWithCookie;
+use App\Http\Controllers\Api\TripUpdatesController;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login',    [AuthController::class, 'login']);
@@ -18,10 +18,16 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
 Route::middleware(['auth:sanctum'])
     ->group(function () {
+        // Rutas para actualizar trips, registrar updates, etc.
+
         Route::get('/trips', [TripController::class, 'index']);
         Route::post('/trips', [TripController::class, 'store']);
         Route::post('/trips/import', [TripController::class, 'importExcel']);
-        // Rutas para actualizar trips, registrar updates, etc.
+
+        Route::get('/personnel', [TripController::class, 'getDriverName']);
+
+        Route::get('/trip-updates', [TripUpdatesController::class, 'index']);
+        Route::post('/trip-updates', [TripUpdatesController::class, 'store']);
     });
 
 

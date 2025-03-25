@@ -31,6 +31,6 @@ class Trip extends Model
 
     public function updates()
     {
-        return $this->hasMany(TripUpdate::class);
+        return $this->hasMany(TripUpdate::class, 'trip_id', 'id');
     }
 }

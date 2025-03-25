@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Events\DataUpdated;
 use App\Exports\TripsTemplateExport;
 use App\Http\Controllers\Controller;
 use App\Imports\TripsImport;
 use Illuminate\Http\Request;
 use App\Models\Trip;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 use Maatwebsite\Excel\Facades\Excel;
 
 class TripController extends Controller
@@ -24,23 +26,119 @@ class TripController extends Controller
         //     return response()->json(['error' => 'El parámetro date es requerido'], 400);
         // }
 
+        // Aplicar filtro de fecha si existe
         if ($date) {
-            $query = Trip::whereDate('delivery_date', $date);
-            $trips = $query->orderBy('delivery_date', 'desc')->get();
+            $query->whereDate('delivery_date', $date);
         }
 
+        // Aplicar filtro de proyectos si no es 'all'
         if ($projects !== 'all') {
             $projectList = explode(',', $projects);
             $query->whereIn('project', $projectList);
         }
 
-        $trips = $query->orderBy('delivery_date', 'desc')->get();
+        // Cargar la relación y obtener los resultados
+        $trips = $query->with('updates')
+            ->orderBy('delivery_date', 'desc')
+            ->get();
 
         return response()->json($trips);
     }
 
-    // Método para crear un trip (validando que el chofer exista, etc.)
     public function store(Request $request)
+    {
+        $data = $request->validate([
+            'trips' => 'required|array',
+            'trips.*.delivery_date' => 'required|date',
+            'trips.*.driver_name' => 'required|string',
+            'trips.*.driver_email' => 'required|email',
+            'trips.*.driver_document' => 'required|string',
+            'trips.*.driver_phone' => 'required|string',
+            'trips.*.origin' => 'required|string',
+            'trips.*.destination' => 'required|string',
+            'trips.*.project' => 'required|string',
+            'trips.*.plate_number' => 'required|string',
+            'trips.*.property_type' => 'required|string',
+            'trips.*.shift' => 'nullable|in:Día,Noche',
+            'trips.*.gps_provider' => 'nullable|string',
+            'trips.*.uri_gps' => 'nullable|string',
+            'trips.*.usuario' => 'nullable|string',
+            'trips.*.clave' => 'nullable|string',
+            'trips.*.current_status' => 'nullable|in:SCHEDULED,IN_TRANSIT,DELAYED,DELIVERED,CANCELLED',
+        ]);
+
+        $trips = [];
+
+        foreach ($data['trips'] as $tripData) {
+            // Validar el chofer
+            $chofer = DB::connection('sistema_onix')
+                ->table('onix_personal')
+                ->where('email', $tripData['driver_email'])
+                ->first();
+            if (!$chofer) {
+                return response()->json(['error' => 'El chofer no existe en la base de datos'], 400);
+            }
+
+            // Validar el vehículo
+            $vehiculo = DB::connection('tms')
+                ->table('vehiculos')
+                ->where('plate_number', $tripData['plate_number'])
+                ->first();
+            if (!$vehiculo) {
+                return response()->json(['error' => 'El vehículo no existe en la base de datos'], 400);
+            }
+
+            // Generar system_trip_id si no se envía uno
+            if (empty($tripData['system_trip_id'])) {
+                $tripData['system_trip_id'] = $tripData['project'] . '-' . str_pad(rand(1, 99999), 5, '0', STR_PAD_LEFT);
+            }
+
+            // Crear el viaje
+            $trips[] = Trip::create($tripData);
+        }
+
+        $success_message = sizeof($trips) > 0 ? 'Viajes creados exitosamente' : 'Viaje creado exitosamente';
+
+        //Emitir evento de actualización de datos
+        broadcast(new DataUpdated(['message' => 'Los datos han sido actualizados']));
+
+        return response()->json(['message' => $success_message, 'trips' => $trips], 201);
+    }
+
+    public function getDriverName(Request $request)
+    {
+        $driverEmail = $request->input('email');
+        $driverDocument = $request->input('cedula');
+
+        if (empty($driverEmail) && empty($driverDocument)) {
+            return response()->json(['error' => 'Debes enviar al menos un parámetro (email o cédula)'], 400);
+        }
+
+        if ($request->filled('cedula')) {
+            $driver = DB::connection('sistema_onix')
+                ->table('onix_personal')
+                ->where('name', $driverDocument)
+                ->first();
+            if (!$driver) {
+                return response()->json(['error' => 'El chofer no existe en la base de datos'], 400);
+            }
+        }
+
+        if ($request->filled('email')) {
+            $driver = DB::connection('sistema_onix')
+                ->table('onix_personal')
+                ->where('name', $driverEmail)
+                ->first();
+            if (!$driver) {
+                return response()->json(['error' => 'El chofer no existe en la base de datos'], 400);
+            }
+        }
+
+        return response()->json(['driver_name' => $driver->name], 200);
+    }
+
+    // Método para crear un trip (validando que el chofer exista, etc.)
+    public function massStore(Request $request)
     {
         // Incluir 'driver_email' en la validación
         $data = $request->validate([
@@ -85,6 +183,8 @@ class TripController extends Controller
         // Crear el registro del trip
         $trip = Trip::create($data);
 
+        broadcast(new DataUpdated(['message' => 'Los datos han sido actualizados']));
+
         return response()->json($trip, 201);
     }
 
@@ -97,6 +197,7 @@ class TripController extends Controller
 
         try {
             Excel::import(new TripsImport, $request->file('file'));
+            broadcast(new DataUpdated(['message' => 'Importación completa']));
             return response()->json(['message' => 'Importación completada'], 200);
         } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
             // Recopila los errores de validación para cada fila

@@ -26,8 +26,6 @@ return new class extends Migration {
             $table->timestamps();
 
             $table->foreign('trip_id')->references('id')->on('trips')->onDelete('cascade');
-            // Si tienes una tabla de usuarios con UUID, puedes agregar:
-            // $table->foreign('updated_by')->references('id')->on('users');
         });
     }
 
