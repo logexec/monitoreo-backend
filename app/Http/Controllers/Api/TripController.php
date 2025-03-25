@@ -111,11 +111,12 @@ class TripController extends Controller
             return response()->json(['error' => 'Debes enviar al menos un parámetro.'], 400);
         }
 
+        $name = null;
         if ($request->filled('cedula')) {
             try {
                 $driver = DB::connection('tms1')
                     ->table('transportistas')
-                    ->where('identification', $driverDocument)
+                    ->where('name', $driverDocument)
                     ->first();
                 if (!$driver) {
                     return response()->json(['error' => 'La cédula ingresada no existe en la base de datos'], 400);
@@ -139,7 +140,7 @@ class TripController extends Controller
             }
         }
 
-        return response()->json(['driver_name' => $driver->name], 200);
+        return response()->json(['driver' => $driver], 200);
     }
 
     // Método para crear un trip (validando que el chofer exista, etc.)
