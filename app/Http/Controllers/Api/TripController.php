@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Imports\TripsImport;
 use Illuminate\Http\Request;
 use App\Models\Trip;
+use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Maatwebsite\Excel\Facades\Excel;
@@ -111,22 +112,30 @@ class TripController extends Controller
         }
 
         if ($request->filled('cedula')) {
-            $driver = DB::connection('sistema_onix')
-                ->table('onix_personal')
-                ->where('name', $driverDocument)
-                ->first();
-            if (!$driver) {
-                return response()->json(['error' => 'El chofer no existe en la base de datos'], 400);
+            try {
+                $driver = DB::connection('tms1')
+                    ->table('transportistas')
+                    ->where('identification', $driverDocument)
+                    ->first();
+                if (!$driver) {
+                    return response()->json(['error' => 'La cédula ingresada no existe en la base de datos'], 400);
+                }
+            } catch (Exception $e) {
+                return response()->json(['error' => $e->getMessage()], 500);
             }
         }
 
         if ($request->filled('email')) {
-            $driver = DB::connection('sistema_onix')
-                ->table('onix_personal')
-                ->where('name', $driverEmail)
-                ->first();
-            if (!$driver) {
-                return response()->json(['error' => 'El chofer no existe en la base de datos'], 400);
+            try {
+                $driver = DB::connection('tms1')
+                    ->table('transportistas')
+                    ->where('email', $driverEmail)
+                    ->first();
+                if (!$driver) {
+                    return response()->json(['error' => 'El email ingresado no existe en la base de datos'], 400);
+                }
+            } catch (Exception $e) {
+                return response()->json(['error' => $e->getMessage()], 500);
             }
         }
 

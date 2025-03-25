@@ -54,10 +54,16 @@ return [
 
         'tms1' => [
             'driver'   => 'mysql',
-            'host'     => env('DB_TMS1_HOST', '127.0.0.1'),
+            'host'     => env('DB_TMS1_HOST', 'tms1.logex.com.ec'),
+            'port' => env('TMS1_DB_PORT', '3306'),
             'database' => env('DB_TMS1_DATABASE', 'tms1'),
-            'username' => env('DB_TMS1_USERNAME', 'usuario'),
-            'password' => env('DB_TMS1_PASSWORD', 'contraseña'),
+            'username' => env('DB_TMS1_USERNAME', 'restrella'),
+            'password' => env('DB_TMS1_PASSWORD', 'Onix210320#'),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'strict' => true,
+            'engine' => null,
         ],
 
 
