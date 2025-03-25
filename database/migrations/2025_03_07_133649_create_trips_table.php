@@ -25,7 +25,6 @@ return new class extends Migration
             $table->string('plate_number');
             $table->string('property_type');
             $table->enum('shift', ['Día', 'Noche'])->default('Día');
-            $table->string('gps_provider')->nullable();
             $table->string('uri_gps')->nullable();
             $table->string('usuario')->nullable();
             $table->string('clave')->nullable();
