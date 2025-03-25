@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Events\DataUpdated;
 use App\Http\Controllers\Controller;
 use App\Models\TripUpdate;
 use Illuminate\Http\Request;
@@ -66,8 +65,6 @@ class TripUpdatesController extends Controller
                 break;
         }
         $trip->save();
-
-        broadcast(new DataUpdated(['message' => 'Los datos han sido actualizados']));
 
         return response()->json($trip_update, 201);
     }

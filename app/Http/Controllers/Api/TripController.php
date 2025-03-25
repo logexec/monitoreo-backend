@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Events\DataUpdated;
 use App\Exports\TripsTemplateExport;
 use App\Http\Controllers\Controller;
 use App\Imports\TripsImport;
@@ -99,9 +98,6 @@ class TripController extends Controller
 
         $success_message = sizeof($trips) > 0 ? 'Viajes creados exitosamente' : 'Viaje creado exitosamente';
 
-        //Emitir evento de actualización de datos
-        broadcast(new DataUpdated(['message' => 'Los datos han sido actualizados']));
-
         return response()->json(['message' => $success_message, 'trips' => $trips], 201);
     }
 
@@ -183,8 +179,6 @@ class TripController extends Controller
         // Crear el registro del trip
         $trip = Trip::create($data);
 
-        broadcast(new DataUpdated(['message' => 'Los datos han sido actualizados']));
-
         return response()->json($trip, 201);
     }
 
@@ -197,7 +191,6 @@ class TripController extends Controller
 
         try {
             Excel::import(new TripsImport, $request->file('file'));
-            broadcast(new DataUpdated(['message' => 'Importación completa']));
             return response()->json(['message' => 'Importación completada'], 200);
         } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
             // Recopila los errores de validación para cada fila
