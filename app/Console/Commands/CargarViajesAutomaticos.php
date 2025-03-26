@@ -46,22 +46,20 @@ class CargarViajesAutomaticos extends Command
             }
 
             // Mapear los campos del API a los del modelo Trip.
-            // Notar que la API no provee información de chofer, por lo que se asigna un valor por defecto.
             $tripData = [
                 // Generar system_trip_id con el formato "PROYECTO-xxxxx"
                 'system_trip_id'   => $viaje['proyecto'] . '-' . str_pad($viaje['id_viaje'], 5, '0', STR_PAD_LEFT),
-                'external_trip_id' => $viaje['id_viaje'],
+                'external_trip_id' => $viaje['id_viaje'] ?? '',
                 'delivery_date'    => $viaje['fecha_viaje'],
-                // La API no incluye datos de chofer; se asigna valor por defecto.
-                'driver_name'      => 'Sin asignar',
-                'driver_phone'     => null,
+                'driver_name'      => $viaje['driver_name'] ?? 'Sin asignar',
+                'driver_phone'     => $viaje['driver_phone'] ?? null,
                 'origin'           => $viaje['origen'],
                 'destination'      => $viaje['destino'],
                 'project'          => $viaje['proyecto'],
                 'plate_number'     => $viaje['placa'],
-                'property_type'    => 'Desconocido',
-                'shift'            => 'Desconocido',
-                'gps_provider'     => null,
+                'property_type'    => $viaje['property_type'] ?? 'Desconocido',
+                'shift'            => $viaje['shift'] ?? 'Día',
+                'gps_provider'     => $viaje['gps_provider'] ?? null,
                 'current_status'   => 'SCHEDULED',
             ];
 
