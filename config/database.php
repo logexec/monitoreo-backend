@@ -38,11 +38,11 @@ return [
             'strict' => true,
             'engine' => null,
         ],
-        'tms' => [ // Conexión adicional para tms
+        'tms' => [
             'driver' => 'mysql',
             'host' => env('TMS_DB_HOST', 'sgt.logex.com.ec'),
             'port' => env('TMS_DB_PORT', '3306'),
-            'database' => env('TMS_DB_DATABASE', 'sistema_onix'),
+            'database' => env('TMS_DB_DATABASE', 'tms'),
             'username' => env('TMS_DB_USERNAME', 'restrella'),
             'password' => env('TMS_DB_PASSWORD', 'LogeX-?2028*'),
             'charset' => 'utf8mb4',

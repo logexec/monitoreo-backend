@@ -10,7 +10,7 @@ use App\Http\Controllers\Api\TripUpdatesController;
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login',    [AuthController::class, 'login']);
 Route::get('/personnel', [TripController::class, 'getDriverName']);
-
+Route::get('/plate-numbers', [TripController::class, 'getPlateNumbers']);
 
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/me',    [AuthController::class, 'me']);
@@ -27,6 +27,8 @@ Route::middleware(['auth:sanctum'])
         Route::post('/trips/import', [TripController::class, 'importExcel']);
 
         // Route::get('/personnel', [TripController::class, 'getDriverName']);
+
+        // Route::get('/plate-numbers', [TripController::class, 'getPlateNumbers']);
 
         Route::get('/trip-updates', [TripUpdatesController::class, 'index']);
         Route::post('/trip-updates', [TripUpdatesController::class, 'store']);

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\TripUpdate;
+use Google\Cloud\Storage\StorageClient;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -36,6 +37,24 @@ class TripUpdatesController extends Controller
             'notes'    => 'required|string',
             'image_url'      => 'nullable|string',
         ])->validate();
+
+        //Subir imagen si es que existe
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
+            $path = 'trip-updates/' . uniqid() . '.' . $image->extension();
+
+            $storage = new StorageClient([
+                'keyFilePath' => config('filesystems.disks.gcs.key_file'),
+            ]);
+
+            $bucket = $storage->bucket(config('filesystems.disks.gcs.bucket'));
+            $object = $bucket->upload(
+                fopen($image->path(), 'r'),
+                ['name' => $path]
+            );
+
+            $data['image_url'] = sprintf('https://storage.googleapis.com/%s/%s', config('filesystems.disks.gcs.bucket'), $path);
+        }
 
         // Indica quien está realizando la actualización
         $update_issuer = $request->user();

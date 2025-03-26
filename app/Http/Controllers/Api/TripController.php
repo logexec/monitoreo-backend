@@ -143,6 +143,21 @@ class TripController extends Controller
         return response()->json(['driver' => $driver], 200);
     }
 
+    public function getPlateNumbers()
+    {
+        try {
+            $plate_numbers = DB::connection('tms1')
+                ->table('vehiculos')
+                ->where('status', "ACTIVO")
+                ->select('name', 'id')
+                ->get();
+        } catch (Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+
+        return response()->json(['data' => $plate_numbers], 200);
+    }
+
     // Método para crear un trip (validando que el chofer exista, etc.)
     public function massStore(Request $request)
     {
