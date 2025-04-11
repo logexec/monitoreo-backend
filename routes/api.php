@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Api\GeotabController;
+use App\Http\Controllers\Api\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\TripController;
@@ -17,10 +19,23 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
 });
 
+Route::prefix('geotab')->group(function () {
+    // Rutas principales
+    Route::get('/alerts', [GeotabController::class, 'getAlerts']);
+
+    // Rutas de diagnóstico para depuración
+    Route::get('/test-connection', [GeotabController::class, 'testConnection']);
+    Route::get('/available-types', [GeotabController::class, 'getAvailableTypes']);
+});
 
 Route::middleware(['auth:sanctum'])
     ->group(function () {
-        // Rutas para actualizar trips, registrar updates, etc.
+        // Rutas protegidas por auth
+
+        Route::get('/users', [UserController::class, 'index']);
+        Route::post('/users', [UserController::class, 'store']);
+        Route::put('/users/{id}', [UserController::class, 'update']);
+        Route::delete('/users/{id}', [UserController::class, 'destroy']);
 
         Route::get('/trips', [TripController::class, 'index']);
         Route::post('/trips', [TripController::class, 'store']);
