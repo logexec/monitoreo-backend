@@ -38,7 +38,9 @@ class TripController extends Controller
         }
 
         // Cargar la relación y obtener los resultados
+        // Solo viajes que no han finalizado
         $trips = $query->with('updates')
+            ->where('current_status', "!=", "DELIVERED")
             ->orderBy('delivery_date', 'desc')
             ->get();
 
