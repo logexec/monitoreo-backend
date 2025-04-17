@@ -83,6 +83,7 @@ class TripUpdatesController extends Controller
                 $trip->current_status = 'SCHEDULED';
                 break;
         }
+        $trip->current_status_update = $trip_update->trip;
         $trip->save();
 
         return response()->json($trip_update, 201);

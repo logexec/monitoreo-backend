@@ -27,6 +27,7 @@ class Trip extends Model
         'usuario',
         'clave',
         'current_status',
+        'current_status_update',
     ];
 
     public function updates()
