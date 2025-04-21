@@ -20,16 +20,16 @@ class Trip extends Model
         'destination',
         'project',
         'plate_number',
+        'vehicle_id',
         'property_type',
         'shift',
-        'gps_provider',
-        'uri_gps',
-        'usuario',
-        'clave',
         'current_status',
-        'current_status_update',
     ];
 
+    public function gpsDevices()
+    {
+        return $this->hasMany(GpsDevice::class);
+    }
     public function updates()
     {
         return $this->hasMany(TripUpdate::class, 'trip_id', 'id');

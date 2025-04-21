@@ -27,7 +27,7 @@ class TripUpdatesController extends Controller
 
     public function store(Request $request)
     {
-        // Incluir 'driver_email' en la validación
+        // Validación
         $data = Validator::make($request->all(), [
             'trip_id'  => 'required|exists:trips,id',
             'category' => [
@@ -35,13 +35,13 @@ class TripUpdatesController extends Controller
                 'in:INICIO_RUTA,SEGUIMIENTO,ACCIDENTE,AVERIA,ROBO_ASALTO,PERDIDA_CONTACTO,VIAJE_CARGADO,VIAJE_FINALIZADO',
             ],
             'notes'    => 'required|string',
-            'image_url'      => 'nullable|string',
+            'image_url' => 'nullable|string',
         ])->validate();
 
-        //Subir imagen si es que existe
+        // Subir imagen si existe
         if ($request->hasFile('image')) {
             $image = $request->file('image');
-            $path = 'trip-updates/' . uniqid() . '.' . $image->extension();
+            $path = 'trip-updates/' . $image->getClientOriginalName() . '.' . $image->extension();
 
             $storage = new StorageClient([
                 'keyFilePath' => config('filesystems.disks.gcs.key_file'),
@@ -56,14 +56,14 @@ class TripUpdatesController extends Controller
             $data['image_url'] = sprintf('https://storage.googleapis.com/%s/%s', config('filesystems.disks.gcs.bucket'), $path);
         }
 
-        // Indica quien está realizando la actualización
+        // Indica quién está realizando la actualización
         $update_issuer = $request->user();
         $data['updated_by'] = $update_issuer->id;
 
-        // Crear el registro del trip
+        // Crear el registro de TripUpdate
         $trip_update = TripUpdate::create($data);
 
-        // Actualizar el estado del viaje de la tabla trips
+        // Actualizar el estado del viaje en la tabla trips
         $trip = $trip_update->trip;
         switch ($data['category']) {
             case 'INICIO_RUTA':
@@ -83,7 +83,11 @@ class TripUpdatesController extends Controller
                 $trip->current_status = 'SCHEDULED';
                 break;
         }
-        $trip->current_status_update = $trip_update->trip;
+
+        // Asignar un texto plano a current_status_update
+        $trip->current_status_update = $trip_update->category; // Almacena solo el texto de la categoría
+        // Alternativa: combinar categoría y notas
+        // $trip->current_status_update = $trip_update->category . ': ' . $trip_update->notes;
         $trip->save();
 
         return response()->json($trip_update, 201);

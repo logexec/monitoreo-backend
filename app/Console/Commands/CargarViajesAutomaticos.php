@@ -45,25 +45,38 @@ class CargarViajesAutomaticos extends Command
                 continue;
             }
 
-            // Mapear los campos del API a los del modelo Trip.
+            // Mapear los campos del API a los del modelo Trip
             $tripData = [
-                // Generar system_trip_id con el formato "PROYECTO-xxxxx"
                 'system_trip_id'   => $viaje['proyecto'] . '-' . str_pad($viaje['id_viaje'], 5, '0', STR_PAD_LEFT),
                 'external_trip_id' => $viaje['id_viaje'] ?? '',
                 'delivery_date'    => $viaje['fecha_viaje'],
-                'driver_name'      => $viaje['driver_name'] ?? 'Sin asignar',
-                'driver_phone'     => $viaje['driver_phone'] ?? null,
+                'driver_name'      => $viaje['conductor'] ?? 'Sin asignar',
+                'driver_phone'     => $viaje['telefono_conductor'] ?? null,
                 'origin'           => $viaje['origen'],
                 'destination'      => $viaje['destino'],
                 'project'          => $viaje['proyecto'],
+                'vehicle_id'       => $viaje['vehiculo_id'],
                 'plate_number'     => $viaje['placa'],
                 'property_type'    => $viaje['property_type'] ?? 'Desconocido',
                 'shift'            => $viaje['shift'] ?? 'Día',
-                'gps_provider'     => $viaje['gps_provider'] ?? null,
                 'current_status'   => 'SCHEDULED',
             ];
 
-            Trip::create($tripData);
+            // Crear el viaje
+            $trip = Trip::create($tripData);
+
+            // Procesar dispositivos_gps si existen
+            if (!empty($viaje['dispositivos_gps']) && is_array($viaje['dispositivos_gps'])) {
+                foreach ($viaje['dispositivos_gps'] as $gps) {
+                    $trip->gpsDevices()->create([
+                        'gps_provider' => $gps['proveedor'] ?? null,
+                        'uri_gps'      => $gps['uri_gps'] ?? null,
+                        'user'      => $gps['usuario'] ?? null,
+                        'password'        => $gps['clave'] ?? null,
+                    ]);
+                }
+            }
+
             $countImported++;
         }
 

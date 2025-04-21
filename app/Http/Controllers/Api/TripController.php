@@ -9,7 +9,6 @@ use Illuminate\Http\Request;
 use App\Models\Trip;
 use Exception;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Validator;
 use Maatwebsite\Excel\Facades\Excel;
 
 class TripController extends Controller
