@@ -13,8 +13,7 @@ class CargarViajesAutomaticos extends Command
 
     public function handle()
     {
-        // Utiliza las variables de entorno para mayor flexibilidad
-        $apiUrl   = env('TMS1_API_URL', 'https://tms1.logex.com.ec/api/get-trips');
+        $apiUrl = env('TMS1_API_URL', 'https://tms1.logex.com.ec/api/get-trips');
         $apiToken = env('TMS1_API_TOKEN', '');
 
         $this->info('Consultando la API de tms1...');
@@ -35,12 +34,12 @@ class CargarViajesAutomaticos extends Command
 
         $countImported = 0;
         foreach ($data['viajes'] as $viaje) {
-            // Filtrar solo los viajes en estado "Pendiente"
+            // Filtrar solo los viajes en estado "Pendiente" (ajusta según los valores reales de la API)
             if (!isset($viaje['estado_viaje']) || $viaje['estado_viaje'] !== 'Pendiente') {
                 continue;
             }
 
-            // Evitar duplicados: comprobamos que no exista un viaje con el id_viaje en external_trip_id
+            // Evitar duplicados
             if (Trip::where('external_trip_id', $viaje['id_viaje'])->exists()) {
                 continue;
             }
