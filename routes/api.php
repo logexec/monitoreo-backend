@@ -7,12 +7,15 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\TripController;
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\DashboardTripsSpecificInformation;
 use App\Http\Controllers\Api\TripUpdatesController;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login',    [AuthController::class, 'login']);
 Route::get('/personnel', [TripController::class, 'getDriverName']);
 Route::get('/plate-numbers', [TripController::class, 'getPlateNumbers']);
+
+Route::get('/dashboardTrips', [DashboardTripsSpecificInformation::class, 'getMonthlyTrips']);
 
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/me',    [AuthController::class, 'me']);
