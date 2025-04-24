@@ -24,6 +24,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
 Route::prefix('geotab')->group(function () {
     // Rutas principales
+    Route::get('/devices', [GeotabController::class, 'getAlerts']);
     Route::get('/alerts', [GeotabController::class, 'getAlerts']);
 
     // Rutas de diagnóstico para depuración
