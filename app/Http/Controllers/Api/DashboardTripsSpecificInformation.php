@@ -11,37 +11,23 @@ class DashboardTripsSpecificInformation extends Controller
 {
     public function getMonthlyTrips(Request $request)
     {
-        // Define rango de fechas basado en el periodo
-        $endDate = now()->endOfMonth();
+        // Define date range based on period
+        $endDate = now()->endOfDay();
         $startDate = match ($request->input('period')) {
-            'last_3_months' => now()->subMonths(2)->startOfMonth(),
-            'last_month'    => now()->subMonth()->startOfMonth(),
-            'last_7_days'   => now()->subDays(6)->startOfDay(),
-            default         => now()->startOfDay(),
+            'last_3_months' => now()->subMonths(3)->startOfDay(),
+            'last_30_days' => now()->subDays(30)->startOfDay(),
+            'last_7_days' => now()->subDays(7)->startOfDay(),
+            'today' => now()->startOfDay(),
+            default => now()->subMonths(3)->startOfDay(),
         };
 
         // Base query
         $query = Trip::whereBetween('delivery_date', [$startDate, $endDate]);
 
-        // Filtros múltiples con whereIn
+        // Apply multiple filters with whereIn
         if ($request->filled('project')) {
             $projects = is_array($request->project) ? $request->project : [$request->project];
             $query->whereIn('project', $projects);
-        }
-
-        if ($request->filled('plate')) {
-            $plates = is_array($request->plate) ? $request->plate : [$request->plate];
-            $query->whereIn('plate_number', $plates);
-        }
-
-        if ($request->filled('vehicle_id')) {
-            $vehicles = is_array($request->vehicle) ? $request->vehicle : [$request->vehicle];
-            $query->whereIn('vehicle_id', $vehicles);
-        }
-
-        if ($request->filled('driver')) {
-            $drivers = is_array($request->driver) ? $request->driver : [$request->driver];
-            $query->whereIn('driver_name', $drivers);
         }
 
         if ($request->filled('destination')) {
@@ -49,26 +35,131 @@ class DashboardTripsSpecificInformation extends Controller
             $query->whereIn('destination', $destinations);
         }
 
-        if ($request->filled('origin')) {
-            $origins = is_array($request->origin) ? $request->origin : [$request->origin];
-            $query->whereIn('origin', $origins);
+        // Handle action
+        $action = $request->input('action');
+        if ($action === 'status_counts') {
+            $totalTrips = $query->count();
+            $statusCounts = [
+                'finalizados' => $query->clone()->where('current_status_update', 'VIAJE_FINALIZADO')->count(),
+                'con_novedad' => $query->clone()->whereIn('current_status_update', [
+                    'ACCIDENTE',
+                    'AVERIA',
+                    'ROBO_ASALTO',
+                    'PERDIDA_CONTACTO',
+                    'VIAJE_CARGADO'
+                ])->count(),
+                'en_seguimiento' => $query->clone()->where('current_status_update', 'SEGUIMIENTO')->count(),
+                'preparados' => $query->clone()->whereIn('current_status_update', [
+                    'VIAJE_CREADO',
+                    'VIAJE_CARGADO'
+                ])->count(),
+            ];
+
+            return response()->json([
+                'total' => $totalTrips,
+                'status_counts' => $statusCounts,
+            ]);
         }
 
+        // Handle groupBy
+        $groupBy = $request->input('groupBy');
+        if ($groupBy) {
+            if ($groupBy === 'month_project') {
+                $trips = $query->selectRaw("DATE_FORMAT(delivery_date, '%Y-%m') as month, project, COUNT(*) as trips")
+                    ->groupBy('month', 'project')
+                    ->get()
+                    ->map(function ($item) {
+                        return [
+                            'month' => $item->month,
+                            'project' => $item->project,
+                            'trips' => $item->trips,
+                        ];
+                    });
+                return response()->json($trips);
+            }
 
-        // Agrupar por mes
-        $trips = $query->get()->groupBy(function ($trip) {
-            return \Illuminate\Support\Carbon::parse($trip->delivery_date)->format('Y-m');
-        })->map(function ($group) use ($request) {
-            return $request->has('count') ? $group->count() : $group;
-        });
+            $groupByField = match ($groupBy) {
+                'month' => 'delivery_date',
+                'destination' => 'destination',
+                'origin' => 'origin',
+                'project' => 'project',
+                default => null,
+            };
 
-        // Formatear para respuesta
-        $result = $trips->map(function ($value, $month) use ($request) {
-            return $request->has('count')
-                ? ['month' => $month, 'count' => $value]
-                : ['month' => $month, 'trips' => $value];
-        })->values();
+            if ($groupByField) {
+                if ($groupBy === 'month') {
+                    $trips = $query->selectRaw("DATE_FORMAT(delivery_date, '%Y-%m') as month, COUNT(*) as count")
+                        ->groupBy('month')
+                        ->get()
+                        ->map(function ($item) {
+                            return [
+                                'month' => $item->month,
+                                'trips' => $item->count,
+                            ];
+                        });
+                } else {
+                    $trips = $query->selectRaw("$groupByField as group_key, COUNT(*) as count, delivery_date")
+                        ->groupBy($groupByField, 'delivery_date')
+                        ->get()
+                        ->groupBy('group_key')
+                        ->map(function ($items, $key) use ($groupBy) {
+                            return [
+                                $groupBy => $key,
+                                'trips' => $items->sum('count'),
+                                'details' => $items->map(function ($item) {
+                                    return [
+                                        'delivery_date' => $item->delivery_date,
+                                        'count' => $item->count,
+                                    ];
+                                })->values(),
+                            ];
+                        })->values();
+                }
+            } else {
+                $trips = $query->select('id', 'project', 'destination', 'delivery_date')->get();
+                $trips = [[
+                    'trips' => $trips->count(),
+                    'data' => $trips->map(function ($trip) {
+                        return [
+                            'id' => $trip->id,
+                            'project' => $trip->project,
+                            'destination' => $trip->destination,
+                            'delivery_date' => $trip->delivery_date,
+                        ];
+                    })->values(),
+                ]];
+            }
+        } else {
+            $trips = $query->select('id', 'project', 'destination', 'delivery_date')->get();
+            $trips = [[
+                'trips' => $trips->count(),
+                'data' => $trips->map(function ($trip) {
+                    return [
+                        'id' => $trip->id,
+                        'project' => $trip->project,
+                        'destination' => $trip->destination,
+                        'delivery_date' => $trip->delivery_date,
+                    ];
+                })->values(),
+            ]];
+        }
 
-        return response()->json($result);
+        if ($action === 'count') {
+            $trips = sizeof($trips);
+        }
+
+        return response()->json($trips);
+    }
+
+    public function getProjects()
+    {
+        $projects = Trip::distinct()->pluck('project')->values();
+        return response()->json($projects);
+    }
+
+    public function getDestinations()
+    {
+        $destinations = Trip::distinct()->pluck('destination')->values();
+        return response()->json($destinations);
     }
 }

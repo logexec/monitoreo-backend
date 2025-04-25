@@ -16,6 +16,8 @@ Route::get('/personnel', [TripController::class, 'getDriverName']);
 Route::get('/plate-numbers', [TripController::class, 'getPlateNumbers']);
 
 Route::get('/dashboardTrips', [DashboardTripsSpecificInformation::class, 'getMonthlyTrips']);
+Route::get('/tripProjects', [DashboardTripsSpecificInformation::class, 'getProjects']);
+Route::get('/tripDestinations', [DashboardTripsSpecificInformation::class, 'getDestinations']);
 
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/me',    [AuthController::class, 'me']);
