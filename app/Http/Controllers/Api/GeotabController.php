@@ -40,6 +40,7 @@ class GeotabController extends Controller
         'AccelerationY' => 'Aceleración (Y)',
         'AccelerationZ' => 'Aceleración (Z)',
         'AccidentLevelAccelerationEvent' => 'Evento de aceleración brusca (nivel de accidente)',
+        // Excepciones personalizadas
         'aMyIxtPqLjUuh8aqh4LyEHA' => 'Advertencia de salida de carril',
         'aeqiSjUvA006rlfwMwb5TwQ' => 'AUX 1 Botón de Pánico',
         'aXa_QuIoye0i-QckxJqwBnw' => 'AUX 2 Puerta Derecha',
@@ -848,6 +849,29 @@ class GeotabController extends Controller
         $diagnosticId = strtolower($diagnosticId);
         $diagnosticName = strtolower($diagnosticName);
 
+        // Mapeo de excepciones personalizadas
+        $customAlertTypes = [
+            'amyixtpqljuuh8aqh4lyeha' => 'safety', // Advertencia de salida de carril
+            'aeqisjuva006rlfwmwb5twq' => 'security', // AUX 1 Botón de Pánico
+            'axa_quioye0i-qckxjqwbnw' => 'security', // AUX 2 Puerta Derecha
+            'aolkfgbvbt0qnoeemdccpza' => 'security', // AUX 3 Puerta Posterior
+            'awspwzk-njeiytq2yxhky-w' => 'deviceIssue', // La cámara se ha sacudido
+            'ahshugff14kc9buw_2ud_7g' => 'safety', // Cinturón de seguridad desabrochado
+            'adnwjo1pzzkuhmbpaw90suq' => 'driverBehavior', // Comidas y bebidas
+            'a8kof9bbgp0cvfxabtyhrja' => 'safety', // Conducción demasiado cercana
+            'adfsckev9ckcoy0imisncnw' => 'driverBehavior', // Conducción distraída
+            'au0wqnno7nkqbrf5y1ktxbg' => 'security', // Detención no autorizada
+            'auw-hsebnb0ujuxn0iv0iga' => 'deviceIssue', // Dispositivo desenchufado
+            'aomkc9i_vjk-lsfekka0vba' => 'driverBehavior', // Fumando
+            'akagqu0uib0yk2kkdpdvzxa' => 'deviceIssue', // Obstrucción del lente
+            'a7lmir8iwyeg0zpqoqooleq' => 'safety', // Cinturón de seguridad desabrochado (acompañante)
+        ];
+
+        // Verificar excepciones personalizadas
+        if (isset($customAlertTypes[$diagnosticId])) {
+            return $customAlertTypes[$diagnosticId];
+        }
+
         // Casos especiales
         if (strpos($diagnosticId, 'accident') !== false) {
             return 'harshAcceleration';
@@ -910,6 +934,29 @@ class GeotabController extends Controller
     {
         $lowerDiagId = strtolower($diagnosticId);
         $lowerDiagName = strtolower($diagnosticName);
+
+        // Mapeo de severidad para excepciones personalizadas
+        $customSeverities = [
+            'amyixtpqljuuh8aqh4lyeha' => 'medium', // Advertencia de salida de carril
+            'aeqisjuva006rlfwmwb5twq' => 'critical', // AUX 1 Botón de Pánico
+            'axa_quioye0i-qckxjqwbnw' => 'high', // AUX 2 Puerta Derecha
+            'aolkfgbvbt0qnoeemdccpza' => 'high', // AUX 3 Puerta Posterior
+            'awspwzk-njeiytq2yxhky-w' => 'medium', // La cámara se ha sacudido
+            'ahshugff14kc9buw_2ud_7g' => 'high', // Cinturón de seguridad desabrochado
+            'adnwjo1pzzkuhmbpaw90suq' => 'medium', // Comidas y bebidas
+            'a8kof9bbgp0cvfxabtyhrja' => 'high', // Conducción demasiado cercana
+            'adfsckev9ckcoy0imisncnw' => 'high', // Conducción distraída
+            'au0wqnno7nkqbrf5y1ktxbg' => 'high', // Detención no autorizada
+            'auw-hsebnb0ujuxn0iv0iga' => 'critical', // Dispositivo desenchufado
+            'aomkc9i_vjk-lsfekka0vba' => 'medium', // Fumando
+            'akagqu0uib0yk2kkdpdvzxa' => 'medium', // Obstrucción del lente
+            'a7lmir8iwyeg0zpqoqooleq' => 'high', // Cinturón de seguridad desabrochado (acompañante)
+        ];
+
+        // Verificar excepciones personalizadas
+        if (isset($customSeverities[$lowerDiagId])) {
+            return $customSeverities[$lowerDiagId];
+        }
 
         // Si no tenemos un valor válido, considerar severidad media
         if ($value === null || $value === '' || $value === 'N/A') {
