@@ -34,6 +34,8 @@ Route::prefix('geotab')->group(function () {
     Route::get('/available-types', [GeotabController::class, 'getAvailableTypes']);
 });
 
+Route::get('/images/{token}', [TripUpdatesController::class, 'serveImage']);
+
 Route::middleware(['auth:sanctum'])
     ->group(function () {
         // Rutas protegidas por auth

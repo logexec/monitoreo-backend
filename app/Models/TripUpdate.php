@@ -14,6 +14,8 @@ class TripUpdate extends Model
         'category',
         'notes',
         'image_url',
+        'image_token',
+        'image_type',
         'updated_by',
     ];
 
