@@ -4,9 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use Exception;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
@@ -23,10 +22,13 @@ class UserController extends Controller
             'password' => 'required|string|min:8',
         ]);
 
+        $validated['password'] = Hash::make($validated['password']);
+
         $user = User::create($validated);
 
         return response()->json($user, 201);
     }
+
 
 
     public function update(Request $request, $id)
