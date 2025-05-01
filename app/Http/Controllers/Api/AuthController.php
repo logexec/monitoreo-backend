@@ -4,10 +4,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
@@ -34,30 +32,25 @@ class AuthController extends Controller
         return response()->json(['user' => $user], 201);
     }
 
-
+    // Login: valida credenciales y autentica usando sesión
     public function login(Request $request)
     {
         $data = $request->validate([
-            'email' => 'required|email',
+            'email'    => 'required|string|email',
             'password' => 'required|string',
         ]);
 
-        $user = User::where('email', $data['email'])->first();
-
-        if (!$user || !Hash::check($data['password'], $user->password)) {
+        if (!Auth::attempt($data)) {
             throw ValidationException::withMessages([
                 'email' => ['Credenciales incorrectas.'],
             ]);
         }
 
-        $token = $user->createToken('api-token')->plainTextToken;
+        // Regenera la sesión para evitar fijación de sesión
+        $request->session()->regenerate();
 
-        return response()->json([
-            'user' => $user,
-            'token' => $token,
-        ]);
+        return response()->json(['user' => $request->user()]);
     }
-
 
     // Obtener información del usuario autenticado
     public function me(Request $request)
