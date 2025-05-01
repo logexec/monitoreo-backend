@@ -24,6 +24,8 @@ class Trip extends Model
         'property_type',
         'shift',
         'current_status',
+        'created_at',
+        'updated_at',
     ];
 
     public function gpsDevices()

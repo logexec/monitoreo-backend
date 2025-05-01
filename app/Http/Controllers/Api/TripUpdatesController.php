@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\TripUpdate;
+use App\Models\User;
 use Carbon\Carbon;
 use Google\Cloud\Storage\StorageClient;
 use Illuminate\Http\Request;
@@ -23,8 +24,9 @@ class TripUpdatesController extends Controller
             $query = TripUpdate::where('trip_id', $trip_id);
         }
 
-        $trips = $query->with('trip:id,system_trip_id,project,plate_number')
+        $trips = $query->with(['trip:id,system_trip_id,project,plate_number,driver_name,driver_phone', 'user:id,name'])
             ->orderBy('created_at', 'desc')->get();
+
 
         return response()->json($trips);
     }

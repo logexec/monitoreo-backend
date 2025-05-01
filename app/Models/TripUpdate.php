@@ -23,4 +23,9 @@ class TripUpdate extends Model
     {
         return $this->belongsTo(Trip::class);
     }
+    // TripUpdate.php
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'updated_by');
+    }
 }

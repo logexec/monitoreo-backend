@@ -59,6 +59,8 @@ class CargarViajesAutomaticos extends Command
                 'property_type'    => $viaje['property_type'] ?? 'Desconocido',
                 'shift'            => $viaje['shift'] ?? 'Día',
                 'current_status'   => 'SCHEDULED',
+                'created_at'       => $viaje['fecha_creacion_viaje'],
+                'updated_at'       => $viaje['fecha_hora_inicio_viaje'],
             ];
 
             // Crear el viaje
