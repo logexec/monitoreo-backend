@@ -22,12 +22,13 @@ class UserController extends Controller
             'password' => 'required|string|min:8',
         ]);
 
+        // Hashear la contraseña antes de crear el usuario
+        $validated['password'] = Hash::make($validated['password']);
+
         $user = User::create($validated);
 
         return response()->json($user, 201);
     }
-
-
 
     public function update(Request $request, $id)
     {
@@ -35,10 +36,18 @@ class UserController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
+            'password' => 'nullable|string|min:8', // Hacer la contraseña opcional en actualización
         ]);
 
+        // Si se proporciona una nueva contraseña, hashearla
+        if (isset($validated['password'])) {
+            $validated['password'] = Hash::make($validated['password']);
+        } else {
+            unset($validated['password']); // No actualizar la contraseña si no se proporciona
+        }
+
         $user->update($validated);
-        return $user;
+        return response()->json($user);
     }
 
     public function destroy($id)
