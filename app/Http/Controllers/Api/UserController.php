@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class UserController extends Controller
 {
@@ -25,11 +26,10 @@ class UserController extends Controller
         if (!$request->filled('password')) {
             throw new Exception("Debes proporcionar una contraseña", 422);
         }
-        if (sizeof($request->input('password')) < 8) {
+        if (strlen($request->input('password')) < 8) {
             throw new Exception("La contraseña debe contener al menos 8 caracteres", 422);
         }
-
-        $validated['password'] = bcrypt($request->input('password'));
+        $validated['password'] = bcrypt($request->password);
 
         return User::create($validated);
     }
