@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use Exception;
 use Illuminate\Http\Request;
 
 class UserController extends Controller
@@ -18,11 +19,17 @@ class UserController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|min:8',
         ]);
 
         if (!$request->filled('password')) {
-            $validated['password'] = bcrypt('Monitoreo2025');
+            throw new Exception("Debes proporcionar una contraseña", 422);
         }
+        if (sizeof($request->input('password')) < 8) {
+            throw new Exception("La contraseña debe contener al menos 8 caracteres", 422);
+        }
+
+        $validated['password'] = bcrypt($request->input('password'));
 
         return User::create($validated);
     }
