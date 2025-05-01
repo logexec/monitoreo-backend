@@ -20,19 +20,16 @@ class UserController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|min:8',
+            'password' => 'required|string|min:8',
         ]);
 
-        if (!$request->filled('password')) {
-            throw new Exception("Debes proporcionar una contraseña", 422);
-        }
-        if (strlen($request->input('password')) < 8) {
-            throw new Exception("La contraseña debe contener al menos 8 caracteres", 422);
-        }
-        $validated['password'] = bcrypt($request->password);
+        $validated['password'] = bcrypt($validated['password']);
 
-        return User::create($validated);
+        $user = User::create($validated);
+
+        return response()->json($user, 201);
     }
+
 
     public function update(Request $request, $id)
     {
