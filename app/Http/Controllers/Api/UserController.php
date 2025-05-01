@@ -23,8 +23,6 @@ class UserController extends Controller
             'password' => 'required|string|min:8',
         ]);
 
-        $validated['password'] = bcrypt($validated['password']);
-
         $user = User::create($validated);
 
         return response()->json($user, 201);
