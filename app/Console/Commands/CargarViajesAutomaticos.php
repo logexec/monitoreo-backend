@@ -34,8 +34,8 @@ class CargarViajesAutomaticos extends Command
 
         $countImported = 0;
         foreach ($data['viajes'] as $viaje) {
-            // Filtrar solo los viajes en estado "Pendiente" (ajusta según los valores reales de la API)
-            if (!isset($viaje['estado_viaje']) || $viaje['estado_viaje'] !== 'Finalizado') {
+            // Filtrar solo los viajes que no hayan finalizado
+            if (!isset($viaje['estado_viaje']) || $viaje['estado_viaje'] === 'Finalizado') {
                 continue;
             }
 
