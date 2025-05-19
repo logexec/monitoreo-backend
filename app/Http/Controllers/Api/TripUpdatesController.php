@@ -24,6 +24,10 @@ class TripUpdatesController extends Controller
             $query = TripUpdate::where('trip_id', $trip_id);
         }
 
+        if ($request->qty !== "all") {
+            $trips = $query->with(['trip:id,system_trip_id,project,plate_number,driver_name,driver_phone', 'user:id,name'])
+                ->orderBy('created_at', 'desc')->limit($request->qty)->get();
+        }
         $trips = $query->with(['trip:id,system_trip_id,project,plate_number,driver_name,driver_phone', 'user:id,name'])
             ->orderBy('created_at', 'desc')->get();
 
