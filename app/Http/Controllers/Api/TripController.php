@@ -40,7 +40,7 @@ class TripController extends Controller
         // Solo viajes que no han finalizado
         $trips = $query->with('gpsDevices')->with('updates')
             ->where('current_status', "!=", "DELIVERED")
-            ->orderBy('delivery_date', 'desc')
+            ->orderBy('delivery_date', 'asc')
             ->get();
 
         return response()->json($trips);
