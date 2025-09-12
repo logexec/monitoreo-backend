@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\TripController;
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\DashboardTripsSpecificInformation;
+use App\Http\Controllers\Api\GeoTabApiController;
 use App\Http\Controllers\Api\TripUpdatesController;
 
 Route::post('/register', [AuthController::class, 'register']);
@@ -24,15 +25,24 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
 });
 
-Route::prefix('geotab')->group(function () {
-    // Rutas principales
-    Route::get('/devices', [GeotabController::class, 'getAlerts']);
-    Route::get('/alerts', [GeotabController::class, 'getAlerts']);
-
-    // Rutas de diagnóstico para depuración
-    Route::get('/test-connection', [GeotabController::class, 'testConnection']);
-    Route::get('/available-types', [GeotabController::class, 'getAvailableTypes']);
+Route::prefix('geotab')->controller(GeoTabApiController::class)->group(function () {
+    Route::get('/trips', 'indexTrips'); // lista general
+    Route::get('/trips/{deviceId}', 'showTrips'); // detalle por dispositivo
+    Route::get('/faults', 'indexFaults'); // todas las alertas
+    Route::get('/odometer/{deviceId}', 'getOdometer'); // valor actual de odómetro
+    Route::get('/vehicle-data', [GeoTabApiController::class, 'getVehicleData']); // Toda la informacion de todos los vehiculos
 });
+
+
+// Route::prefix('geotab')->group(function () {
+//     // Rutas principales
+//     Route::get('/devices', [GeotabController::class, 'getAlerts']);
+//     Route::get('/alerts', [GeotabController::class, 'getAlerts']);
+
+//     // Rutas de diagnóstico para depuración
+//     Route::get('/test-connection', [GeotabController::class, 'testConnection']);
+//     Route::get('/available-types', [GeotabController::class, 'getAvailableTypes']);
+// });
 
 Route::get('/images/{token}', [TripUpdatesController::class, 'serveImage']);
 
