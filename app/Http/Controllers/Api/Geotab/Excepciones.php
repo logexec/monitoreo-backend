@@ -92,7 +92,7 @@ class Excepciones extends Controller
     /** 
      * 
      * Busca el odometro.
-     * @param id es el id del dispositivo a buscar (ej. b3)
+     * @param id: es el id del dispositivo a buscar (ej. b3)
      * 
      */
     public function getOdometerReading(Request $request): JsonResponse
@@ -148,7 +148,7 @@ class Excepciones extends Controller
     /** 
      * 
      * Trae el log por vehiculo.
-     * @param id es el id del dispositivo a buscar (ej. b3)
+     * @param id: es el id del dispositivo a buscar (ej. b3)
      * 
      */
     public function getVehicleLogRecord(Request $request): JsonResponse
