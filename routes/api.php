@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\TripController;
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\DashboardTripsSpecificInformation;
+use App\Http\Controllers\Api\Geotab\Excepciones;
 use App\Http\Controllers\Api\GeoTabApiController;
 use App\Http\Controllers\Api\TripUpdatesController;
 
@@ -31,6 +32,15 @@ Route::prefix('geotab')->controller(GeoTabApiController::class)->group(function 
     Route::get('/faults', 'indexFaults'); // todas las alertas
     Route::get('/odometer/{deviceId}', 'getOdometer'); // valor actual de odómetro
     Route::get('/vehicle-data', [GeoTabApiController::class, 'getVehicleData']); // Toda la informacion de todos los vehiculos
+
+    // APIs actualizadas y funcionando segun la respuesta en el correo de Felipe Paniagua
+    Route::get('/index-exeptions', [Excepciones::class, 'indexExceptions']);
+    Route::get('/getGroup', [Excepciones::class, 'getGroup']);
+    Route::get('/getDevice', [Excepciones::class, 'getDevice']);
+    Route::get('/getOdometer', [Excepciones::class, 'getOdometerReading']);
+    Route::get('/getFaultData', [Excepciones::class, 'getFaultData']);
+    Route::get('/getVehicleLogRecord', [Excepciones::class, 'getVehicleLogRecord']);
+    Route::get('/getGeotabTrips', [Excepciones::class, 'getGeotabTrips']);
 });
 
 

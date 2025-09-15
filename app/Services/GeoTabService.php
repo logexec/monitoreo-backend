@@ -46,24 +46,38 @@ class GeoTabService
         }
     }
 
-    public function call(string $method, array $params = [])
-    {
+    public function call(
+        string $method,
+        array $params = [],
+        ?int $resultsLimit = null,
+        ?string $fromVersion = null
+    ) {
         if (!$this->sessionId) {
             $this->sessionId = $this->authenticate();
         }
 
-        // Añade los credentials obligatorios a cada request
+        // Always include required credentials
         $params['credentials'] = [
-            'database' => $this->database,
+            'database'  => $this->database,
             'sessionId' => $this->sessionId,
-            'userName' => config('geotab.username'),
-            'server' => config('geotab.server'),
+            'userName'  => config('geotab.username'),
+            'server'    => config('geotab.server'),
         ];
 
-        $response = Http::post($this->baseUrl, [
+        // Build the payload
+        $payload = [
             'method' => $method,
             'params' => $params,
-        ]);
+            // fall back to 5000 if not provided
+            'resultsLimit' => $resultsLimit ?? 5000,
+        ];
+
+        // Only include fromVersion if the caller provided it
+        if ($fromVersion !== null) {
+            $payload['fromVersion'] = $fromVersion;
+        }
+
+        $response = Http::post($this->baseUrl, $payload);
 
         $data = $response->json();
         Log::info("GeoTab [$method] response", $data);
