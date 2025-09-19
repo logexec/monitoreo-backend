@@ -10,8 +10,9 @@ class GpsDevice extends Model
         'trip_id',
         'gps_provider',
         'uri_gps',
-        'usuario',
-        'clave',
+        'user',
+        'password',
+        'device_id',
     ];
 
     public function trip()

@@ -71,10 +71,11 @@ class CargarViajesAutomaticos extends Command
             if (!empty($viaje['dispositivos_gps']) && is_array($viaje['dispositivos_gps'])) {
                 foreach ($viaje['dispositivos_gps'] as $gps) {
                     $trip->gpsDevices()->create([
+                        'device_id'    => $gps['dispositivo_id'] ?? null,
                         'gps_provider' => $gps['proveedor'] ?? null,
+                        'password'     => $gps['clave'] ?? null,
                         'uri_gps'      => $gps['uri_gps'] ?? null,
-                        'user'      => $gps['usuario'] ?? null,
-                        'password'        => $gps['clave'] ?? null,
+                        'user'         => $gps['usuario'] ?? null,
                     ]);
                 }
             }
